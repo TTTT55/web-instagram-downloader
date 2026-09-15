@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent, type MouseEvent } from "react";
 import type { MediaItem, MediaResult } from "@/lib/instagram";
 import { API_BASE, type ToolMode } from "@/lib/site";
 import { extractAudioToWav, saveBlob } from "@/lib/audio";
@@ -178,7 +178,7 @@ export function DownloadForm({ mode, placeholder }: Props) {
             <>
               <svg className="spinner h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden>
                 <circle cx="12" cy="12" r="9" stroke="currentColor" strokeOpacity="0.3" strokeWidth="3" />
-                <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                <path d="M21 12a9 9 0 0-9-9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
               </svg>
               Fetching…
             </>
@@ -315,7 +315,7 @@ function MediaCard({ item, result, mode, refreshItem }: { item: MediaItem; resul
   const [thumbSrc, setThumbSrc] = useState<string | undefined>(item.thumbnail);
   const [thumbFallback, setThumbFallback] = useState(false);
 
-  const download = async (e: React.MouseEvent<HTMLAnchorElement>) => {
+  const download = async (e: MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     setDownloadError(null);
     setDownloadState("downloading");
