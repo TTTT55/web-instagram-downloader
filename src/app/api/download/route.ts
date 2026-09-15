@@ -1,4 +1,5 @@
 import { createRateLimiter, handleDownloadRequest, parseInstagramUrl } from "@/lib/instagram";
+import { fetchInstagramEmbed } from "@/lib/instagram-embed";
 import { fetchInstagramHtmlFallback } from "@/lib/instagram-html-fallback";
 
 export const dynamic = "force-dynamic";
@@ -40,25 +41,34 @@ async function handle(request: Request) {
     return handleDownloadRequest(request, { IG_DOC_IDS: process.env.IG_DOC_IDS }, rateLimit);
   }
 
-  // Prefer the public HTML/embed representation. It contains fresh signed CDN
-  // URLs and supports carousel sidecars. The older GraphQL strategy is retained
-  // below as a fallback for cases where Instagram does not expose the HTML data.
   const sourceUrl = await getSourceUrl(request);
   if (sourceUrl) {
     try {
       const parsed = parseInstagramUrl(sourceUrl);
       if (parsed.shortcode && parsed.kind !== "story" && parsed.kind !== "share") {
-        const result = await fetchInstagramHtmlFallback(sourceUrl);
+        // Use the balanced embed parser first. This avoids accepting a stale or
+        // malformed GraphQL result when Instagram's Polaris endpoint returns a
+        // 200 response containing an unusable media object.
+        const result = await fetchInstagramEmbed(sourceUrl);
         return Response.json({ ok: true, ...result }, { headers: { "Cache-Control": "no-store" } });
       }
     } catch {
-      // Fall back to the existing multi-strategy extractor below.
+      // The embed representation is not always exposed. Try the application/json
+      // page extractor before falling back to the older GraphQL strategies.
+      try {
+        const parsed = parseInstagramUrl(sourceUrl);
+        if (parsed.shortcode && parsed.kind !== "story" && parsed.kind !== "share") {
+          const result = await fetchInstagramHtmlFallback(sourceUrl);
+          return Response.json({ ok: true, ...result }, { headers: { "Cache-Control": "no-store" } });
+        }
+      } catch {
+        // Fall through to the existing multi-strategy extractor below.
+      }
     }
   }
 
   const response = await handleDownloadRequest(request, { IG_DOC_IDS: process.env.IG_DOC_IDS }, rateLimit);
 
-  // Defensive URL normalization for responses returned by the legacy extractor.
   if (response.ok && response.headers.get("content-type")?.includes("application/json")) {
     try {
       const body = (await response.json()) as any;
