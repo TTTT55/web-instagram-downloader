@@ -176,7 +176,8 @@ function parseEmbeddedNode(html: string): any | undefined {
         .replace(/\\u0026/g, "&")
         .replace(/\\u002F/gi, "/")
         .replace(/\\\//g, "/")
-        .replace(/&amp;/g, "&");
+        .replace(/&amp;/g, "&")
+        .replace(/\\"/g, '"');
       const node = JSON.parse(normalized);
       if (node && (node.display_url || node.video_url || node.edge_sidecar_to_children)) return node;
     } catch {
