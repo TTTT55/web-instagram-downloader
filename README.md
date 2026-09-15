@@ -86,11 +86,10 @@ The deployment uses `wrangler.toml` and produces a `*.workers.dev` URL. After th
 
 ### Production variables
 
-The Worker configuration already contains the non-secret values needed by the application:
+The Worker configuration contains the non-secret values needed by the application:
 
 - `IG_DOC_IDS`
 - `RATE_LIMIT_PER_MINUTE`
-- `ALLOWED_ORIGIN=https://quickvideosaver.me`
 
 If you configure a contact webhook, set `CONTACT_WEBHOOK_URL` as a Worker secret rather than committing it to Git.
 
