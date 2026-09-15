@@ -16,7 +16,29 @@ function cleanMediaUrl(value: string): string {
     .replace(/\\"/g, '"');
 }
 
+async function getSourceUrl(request: Request): Promise<string> {
+  if (request.method === "GET") return new URL(request.url).searchParams.get("url") || "";
+  if (request.method === "POST") {
+    try {
+      const clone = request.clone();
+      const contentType = clone.headers.get("content-type") || "";
+      if (contentType.includes("application/json")) {
+        const body = (await clone.json()) as { url?: string };
+        return body?.url || "";
+      }
+      const form = await clone.formData();
+      return String(form.get("url") || "");
+    } catch {
+      return "";
+    }
+  }
+  return "";
+}
+
 async function handle(request: Request) {
+  // Clone before the normal handler consumes the request body. The clone lets
+  // the HTML fallback reuse the original Instagram permalink if GraphQL fails.
+  const sourceUrlPromise = getSourceUrl(request);
   const response = await handleDownloadRequest(request, { IG_DOC_IDS: process.env.IG_DOC_IDS }, rateLimit);
 
   // Instagram's Polaris GraphQL endpoint has been intermittently returning
@@ -27,21 +49,11 @@ async function handle(request: Request) {
   // carousel_media children.
   if (!response.ok && response.status >= 400 && response.status < 500) {
     try {
-      let sourceUrl = "";
-      if (request.method === "GET") {
-        sourceUrl = new URL(request.url).searchParams.get("url") || "";
-      } else {
-        // The request body has already been consumed by handleDownloadRequest,
-        // so only GET requests can use this fallback without buffering twice.
-        sourceUrl = "";
-      }
-
-      if (sourceUrl) {
-        const parsed = parseInstagramUrl(sourceUrl);
-        if (parsed.shortcode && parsed.kind !== "story" && parsed.kind !== "share") {
-          const result = await fetchInstagramHtmlFallback(sourceUrl);
-          return Response.json({ ok: true, ...result }, { headers: { "Cache-Control": "no-store" } });
-        }
+      const sourceUrl = await sourceUrlPromise;
+      const parsed = parseInstagramUrl(sourceUrl);
+      if (parsed.shortcode && parsed.kind !== "story" && parsed.kind !== "share") {
+        const result = await fetchInstagramHtmlFallback(sourceUrl);
+        return Response.json({ ok: true, ...result }, { headers: { "Cache-Control": "no-store" } });
       }
     } catch {
       // Preserve the original extractor error below.
