@@ -13,5 +13,3 @@ binding = "ASSETS"
 # Comma-separated Instagram GraphQL doc_ids to try, in order.
 IG_DOC_IDS = "27128499623469141,8845758582119845,10015901848480474"
 RATE_LIMIT_PER_MINUTE = "30"
-# Same-origin production deployment. Change only if you intentionally put the API on another origin.
-ALLOWED_ORIGIN = "https://quickvideosaver.me"
