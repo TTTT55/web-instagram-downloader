@@ -58,7 +58,7 @@ Important variables:
 
 The repository is configured for a **single full-stack Cloudflare Worker**. The same deployment serves the Next.js frontend and all API routes, so GitHub Pages and a separate API server are not required.
 
-Cloudflare currently documents OpenNext as a supported deployment path for existing Next.js applications, while recommending vinext for new Next.js projects. This repository uses OpenNext because it is already a Next.js application and the OpenNext adapter is a direct Next.js-to-Workers deployment path. citeturn0search0turn0search1
+Cloudflare currently supports OpenNext for existing Next.js applications. Cloudflare now recommends vinext for new Next.js projects, but OpenNext remains a documented deployment path for existing applications. This repository uses OpenNext to keep the existing Next.js application architecture intact.
 
 ### Local development
 
@@ -84,7 +84,7 @@ npm run deploy
 
 The deployment uses `wrangler.toml` and produces a `*.workers.dev` URL. After the domain is connected to Cloudflare, add `quickvideosaver.me` as the Worker's custom domain.
 
-### Required production variables
+### Production variables
 
 The Worker configuration already contains the non-secret values needed by the application:
 
