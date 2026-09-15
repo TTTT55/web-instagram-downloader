@@ -33,10 +33,22 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
+const themeInit = `
+  try {
+    const stored = localStorage.getItem("quickvideosaver-theme");
+    const dark = stored === "dark" || (stored !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
+    document.documentElement.classList.toggle("dark", dark);
+    document.documentElement.style.colorScheme = dark ? "dark" : "light";
+  } catch {}
+`;
+
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className="flex min-h-screen flex-col">
+        <Script id="theme-init" strategy="beforeInteractive">
+          {themeInit}
+        </Script>
         {ADSENSE_CLIENT ? (
           <Script
             async
