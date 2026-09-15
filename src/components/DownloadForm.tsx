@@ -28,6 +28,7 @@ function fileBase(result: MediaResult, item: MediaItem) {
 
 export function DownloadForm({ mode, placeholder }: Props) {
   const [url, setUrl] = useState("");
+  const [sourceUrl, setSourceUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<{ code: string; message: string } | null>(null);
   const [result, setResult] = useState<MediaResult | null>(null);
@@ -66,6 +67,7 @@ export function DownloadForm({ mode, placeholder }: Props) {
         if (!data.ok) {
           setError({ code: data.code, message: data.error });
         } else {
+          setSourceUrl(trimmed);
           setResult(data);
         }
       } catch {
@@ -75,6 +77,26 @@ export function DownloadForm({ mode, placeholder }: Props) {
       }
     },
     [mode],
+  );
+
+  const refreshItem = useCallback(
+    async (index: number) => {
+      if (!sourceUrl) throw new Error("The original Instagram link is no longer available. Please fetch the post again.");
+
+      const res = await fetch(`${API_BASE}/api/download`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: sourceUrl, mode }),
+      });
+      const data = (await res.json()) as ApiResponse;
+
+      if (!data.ok) throw new Error(data.error);
+
+      const fresh = data.items.find((candidate) => candidate.index === index) ?? data.items[index];
+      if (!fresh) throw new Error("Instagram did not return that media item. Please try fetching the post again.");
+      return fresh;
+    },
+    [mode, sourceUrl],
   );
 
   const onSubmit = (e: FormEvent) => {
@@ -96,6 +118,7 @@ export function DownloadForm({ mode, placeholder }: Props) {
 
   const reset = () => {
     setUrl("");
+    setSourceUrl("");
     setResult(null);
     setError(null);
     inputRef.current?.focus();
@@ -191,7 +214,7 @@ export function DownloadForm({ mode, placeholder }: Props) {
 
       {result ? (
         <div ref={resultRef} className="mt-6 scroll-mt-24">
-          <ResultCard result={result} mode={mode} />
+          <ResultCard result={result} mode={mode} refreshItem={refreshItem} />
         </div>
       ) : null}
     </div>
@@ -225,7 +248,7 @@ function ErrorBox({ code, message }: { code: string; message: string }) {
   );
 }
 
-function ResultCard({ result, mode }: { result: MediaResult; mode: ToolMode }) {
+function ResultCard({ result, mode, refreshItem }: { result: MediaResult; mode: ToolMode; refreshItem: (index: number) => Promise<MediaItem> }) {
   const items = result.items;
   const filtered =
     mode === "photo"
@@ -276,26 +299,41 @@ function ResultCard({ result, mode }: { result: MediaResult; mode: ToolMode }) {
 
       <ul className="grid gap-4 p-4 sm:grid-cols-2">
         {shown.map((item) => (
-          <MediaCard key={item.index} item={item} result={result} mode={mode} />
+          <MediaCard key={item.index} item={item} result={result} mode={mode} refreshItem={refreshItem} />
         ))}
       </ul>
     </section>
   );
 }
 
-function MediaCard({ item, result, mode }: { item: MediaItem; result: MediaResult; mode: ToolMode }) {
+function MediaCard({ item, result, mode, refreshItem }: { item: MediaItem; result: MediaResult; mode: ToolMode; refreshItem: (index: number) => Promise<MediaItem> }) {
   const base = fileBase(result, item);
   const [audioState, setAudioState] = useState<"idle" | "downloading" | "decoding" | "encoding" | "error">("idle");
   const [audioError, setAudioError] = useState<string | null>(null);
+  const [downloadState, setDownloadState] = useState<"idle" | "downloading" | "error">("idle");
+  const [downloadError, setDownloadError] = useState<string | null>(null);
   const [thumbSrc, setThumbSrc] = useState<string | undefined>(item.thumbnail);
   const [thumbFallback, setThumbFallback] = useState(false);
 
-  const downloadHref = proxyUrl(item.url, `${base}.${item.type === "video" ? "mp4" : "jpg"}`);
+  const download = async (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    setDownloadError(null);
+    setDownloadState("downloading");
+
+    try {
+      const fresh = await refreshItem(item.index);
+      window.location.assign(proxyUrl(fresh.url, `${base}.${fresh.type === "video" ? "mp4" : "jpg"}`));
+    } catch (err) {
+      setDownloadState("error");
+      setDownloadError((err as Error).message);
+    }
+  };
 
   const onExtractAudio = async () => {
     setAudioError(null);
     try {
-      const blob = await extractAudioToWav(proxyUrl(item.url, `${base}.mp4`, true), (stage) => setAudioState(stage));
+      const fresh = await refreshItem(item.index);
+      const blob = await extractAudioToWav(proxyUrl(fresh.url, `${base}.mp4`, true), (stage) => setAudioState(stage));
       saveBlob(blob, `${base}.wav`);
       setAudioState("idle");
     } catch (err) {
@@ -314,6 +352,7 @@ function MediaCard({ item, result, mode }: { item: MediaItem; result: MediaResul
   };
 
   const busy = audioState === "downloading" || audioState === "decoding" || audioState === "encoding";
+  const downloading = downloadState === "downloading";
 
   return (
     <li className="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
@@ -342,7 +381,7 @@ function MediaCard({ item, result, mode }: { item: MediaItem; result: MediaResul
       <div className="flex flex-col gap-2 p-3">
         {mode === "audio" && item.type === "video" ? (
           <>
-            <button type="button" onClick={onExtractAudio} disabled={busy} className="btn-primary !py-2.5 text-sm">
+            <button type="button" onClick={onExtractAudio} disabled={busy || downloading} className="btn-primary !py-2.5 text-sm">
               {busy ? (
                 <>
                   <svg className="spinner h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -355,19 +394,21 @@ function MediaCard({ item, result, mode }: { item: MediaItem; result: MediaResul
                 "Download Audio (WAV)"
               )}
             </button>
-            <a href={downloadHref} className="btn-secondary" download>
-              Download MP4
+            <a href="#download" onClick={download} className="btn-secondary" aria-disabled={downloading}>
+              {downloading ? "Preparing MP4…" : "Download MP4"}
             </a>
             {audioError ? <p className="text-xs text-red-600">{audioError}</p> : null}
+            {downloadError ? <p className="text-xs text-red-600">{downloadError}</p> : null}
           </>
         ) : (
           <>
-            <a href={downloadHref} className="btn-primary !py-2.5 text-sm" download>
-              Download {item.type === "video" ? "Video" : "Photo"}
+            <a href="#download" onClick={download} className="btn-primary !py-2.5 text-sm" aria-disabled={downloading}>
+              {downloading ? "Preparing download…" : `Download ${item.type === "video" ? "Video" : "Photo"}`}
             </a>
             <a href={item.url} target="_blank" rel="noopener noreferrer nofollow" className="btn-secondary">
               Open in new tab
             </a>
+            {downloadError ? <p className="text-xs text-red-600">{downloadError}</p> : null}
           </>
         )}
       </div>
