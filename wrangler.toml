@@ -1,15 +1,17 @@
-# Cloudflare Worker config for the QuickVideoSaver API (free plan, no card required)
-name = "quickvideosaver-api"
-main = "workers/instagram-worker.ts"
-compatibility_date = "2025-01-01"
+# Cloudflare Workers configuration for the full QuickVideoSaver Next.js app.
+# OpenNext builds the Next.js app into .open-next/worker.js.
+name = "quickvideosaver"
+main = ".open-next/worker.js"
+compatibility_date = "2026-09-14"
 compatibility_flags = ["nodejs_compat"]
 
-# Optional: route the worker under your own domain once DNS is on Cloudflare
-# routes = [{ pattern = "api.quickvideosaver.me", custom_domain = true }]
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
 
 [vars]
-# Comma separated GraphQL doc_ids to try, in order. Update here if Instagram rotates them.
+# Comma-separated Instagram GraphQL doc_ids to try, in order.
 IG_DOC_IDS = "27128499623469141,8845758582119845,10015901848480474"
 RATE_LIMIT_PER_MINUTE = "30"
-# Lock CORS to your frontend origin in production, e.g. "https://quickvideosaver.me"
-# ALLOWED_ORIGIN = "https://quickvideosaver.me"
+# Same-origin production deployment. Change only if you intentionally put the API on another origin.
+ALLOWED_ORIGIN = "https://quickvideosaver.me"
