@@ -3,11 +3,10 @@
 Free online tool to download **public** Instagram videos, Reels, photos and audio by pasting a link.
 No login, no watermark, nothing stored.
 
-- **Frontend**: Next.js (App Router) + Tailwind, single-column mobile-first UI.
-- **Backend**: one stateless endpoint (`/api/download`) + a streaming proxy (`/api/proxy`).
-  The extractor lives in [`src/lib/instagram.ts`](src/lib/instagram.ts) and is pure `fetch` –
-  the same file runs in Next.js route handlers, a **Cloudflare Worker** (`workers/`) and **Deno Deploy** (`deno/`).
-- **No database.** (The template's Postgres wiring is only used by `/api/health` for the local sandbox.)
+- **Frontend**: Next.js 16 App Router + Tailwind, single-column mobile-first UI.
+- **Backend**: Next.js Route Handlers (`/api/download`, `/api/proxy`, `/api/contact`, `/api/health`).
+- **Extractor**: `src/lib/instagram.ts` uses the Fetch API and standard Web APIs, so it is compatible with Cloudflare Workers.
+- **Database**: none. The old Arena PostgreSQL/Drizzle template wiring has been removed.
 
 ## Routes
 
@@ -24,59 +23,89 @@ No login, no watermark, nothing stored.
 
 ## API
 
-```
+```text
 POST /api/download        { "url": "https://www.instagram.com/reel/XXXX/" }
 GET  /api/download?url=…
 → { ok: true, shortcode, kind, owner, caption, items: [{ type: "video"|"image", url, thumbnail, width, height }], … }
 → { ok: false, code: "INVALID_URL" | "PRIVATE_OR_UNAVAILABLE" | "NOT_FOUND" | "RATE_LIMITED" | "STORIES_UNSUPPORTED" | "UPSTREAM_ERROR", error }
 
-GET  /api/proxy?url=<instagram cdn url>&filename=<name>   → streams the file with Content-Disposition: attachment
+GET /api/proxy?url=<instagram-cdn-url>&filename=<name>
+→ streams the file with Content-Disposition: attachment
+
+POST /api/contact
+→ optional webhook forwarding; nothing is stored by the app
+
+GET /api/health
+→ { ok: true, service: "quickvideosaver", database: false }
 ```
 
 The extractor tries several public strategies in order (GraphQL `doc_id`s → embed page → web JSON → media-info)
-and returns the most specific error. Instagram rotates `doc_id`s occasionally – update `IG_DOC_IDS`
-(env var / `wrangler.toml`) without touching code.
+and returns the most specific error. Instagram rotates `doc_id`s occasionally, so update `IG_DOC_IDS` without touching code.
 
 ## Environment variables
 
-See [`.env.example`](.env.example).
+Copy `.env.example` to `.env.local` for local development. Server-only variables are never exposed to the browser.
 
-## Deploying for free (no credit card)
+Important variables:
 
-### Option A – everything on Cloudflare Workers (recommended, simplest)
+- `NEXT_PUBLIC_SITE_URL` – canonical site URL.
+- `NEXT_PUBLIC_CONTACT_EMAIL` – email shown on legal pages.
+- `IG_DOC_IDS` – comma-separated Instagram GraphQL document IDs.
+- `RATE_LIMIT_PER_MINUTE` – best-effort per-instance download rate limit.
+- `CONTACT_WEBHOOK_URL` – optional contact/DMCA webhook.
+
+## Cloudflare Workers deployment
+
+The repository is configured for a **single full-stack Cloudflare Worker**. The same deployment serves the Next.js frontend and all API routes, so GitHub Pages and a separate API server are not required.
+
+Cloudflare currently documents OpenNext as a supported deployment path for existing Next.js applications, while recommending vinext for new Next.js projects. This repository uses OpenNext because it is already a Next.js application and the OpenNext adapter is a direct Next.js-to-Workers deployment path. citeturn0search0turn0search1
+
+### Local development
 
 ```bash
-npm i -D @opennextjs/cloudflare wrangler
-npx opennextjs-cloudflare build && npx opennextjs-cloudflare deploy
+npm install
+npm run dev
 ```
 
-Cloudflare's free Workers plan (100k requests/day) runs the whole Next.js app including the API routes.
+### Cloudflare preview
 
-### Option B – static frontend + separate serverless API
+```bash
+npm run preview
+```
 
-1. **API → Cloudflare Worker**
-   ```bash
-   npx wrangler login
-   npx wrangler deploy          # uses wrangler.toml → https://quickvideosaver-api.<you>.workers.dev
-   ```
-   (or **Deno Deploy**: create a project at dash.deno.com, link the repo, entrypoint `deno/main.ts`).
+This builds the application with OpenNext and starts it through Wrangler's Workers runtime.
 
-2. **Frontend → Cloudflare Pages or GitHub Pages**
-   Set `NEXT_PUBLIC_API_BASE=https://quickvideosaver-api.<you>.workers.dev`, remove `src/app/api`
-   (the Worker replaces it), add `output: "export"` to `next.config.ts` and build:
-   ```bash
-   npx next build      # static site in ./out
-   ```
-   Upload `out/` to Cloudflare Pages (`npx wrangler pages deploy out`) or push it to the `gh-pages` branch.
+### Deploy
 
-3. Set `ALLOWED_ORIGIN` on the Worker to your site origin to lock down CORS.
+```bash
+npx wrangler login
+npm run deploy
+```
 
-### Domain (GitHub Student Pack → Namecheap `.me`)
+The deployment uses `wrangler.toml` and produces a `*.workers.dev` URL. After the domain is connected to Cloudflare, add `quickvideosaver.me` as the Worker's custom domain.
 
-1. Claim the free `.me` domain in the Student Developer Pack.
-2. Add the domain to Cloudflare (free plan) and copy the two nameservers.
-3. In Namecheap → Domain → Nameservers → *Custom DNS* → paste Cloudflare's nameservers.
-4. In Cloudflare: Pages/Workers → *Custom domains* → add `quickvideosaver.me` (and `api.` if using Option B).
+### Required production variables
+
+The Worker configuration already contains the non-secret values needed by the application:
+
+- `IG_DOC_IDS`
+- `RATE_LIMIT_PER_MINUTE`
+- `ALLOWED_ORIGIN=https://quickvideosaver.me`
+
+If you configure a contact webhook, set `CONTACT_WEBHOOK_URL` as a Worker secret rather than committing it to Git.
+
+## Cost
+
+The application does not require PostgreSQL, a VPS, or another paid backend. Cloudflare Workers can be started on its Free plan; actual costs depend on usage and the limits/pricing in effect on your Cloudflare account.
+
+## Domain setup
+
+1. Claim the free `.me` domain through the GitHub Student Developer Pack/Namecheap offer if your checkout qualifies.
+2. Add the domain to Cloudflare and copy Cloudflare's assigned nameservers.
+3. In Namecheap → Domain → Nameservers → **Custom DNS**, use Cloudflare's nameservers.
+4. In Cloudflare Workers, add `quickvideosaver.me` as the Worker's custom domain.
+
+You do **not** need GitHub Pages for this full-stack deployment.
 
 ## Legal
 
