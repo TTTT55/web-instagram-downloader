@@ -36,33 +36,29 @@ async function getSourceUrl(request: Request): Promise<string> {
 }
 
 async function handle(request: Request) {
-  // Clone before the normal handler consumes the request body. The clone lets
-  // the HTML fallback reuse the original Instagram permalink if GraphQL fails.
-  const sourceUrlPromise = getSourceUrl(request);
-  const response = await handleDownloadRequest(request, { IG_DOC_IDS: process.env.IG_DOC_IDS }, rateLimit);
+  if (request.method === "OPTIONS") {
+    return handleDownloadRequest(request, { IG_DOC_IDS: process.env.IG_DOC_IDS }, rateLimit);
+  }
 
-  // Instagram's Polaris GraphQL endpoint has been intermittently returning
-  // `data: null` / execution errors since early September 2026. When the
-  // normal extractor cannot resolve a post, read the same prefetched media
-  // object from the public HTML application/json payload instead. This is
-  // especially important for carousels, where the payload contains all
-  // carousel_media children.
-  if (!response.ok && response.status >= 400 && response.status < 500) {
+  // Prefer the public HTML/embed representation. It contains fresh signed CDN
+  // URLs and supports carousel sidecars. The older GraphQL strategy is retained
+  // below as a fallback for cases where Instagram does not expose the HTML data.
+  const sourceUrl = await getSourceUrl(request);
+  if (sourceUrl) {
     try {
-      const sourceUrl = await sourceUrlPromise;
       const parsed = parseInstagramUrl(sourceUrl);
       if (parsed.shortcode && parsed.kind !== "story" && parsed.kind !== "share") {
         const result = await fetchInstagramHtmlFallback(sourceUrl);
         return Response.json({ ok: true, ...result }, { headers: { "Cache-Control": "no-store" } });
       }
     } catch {
-      // Preserve the original extractor error below.
+      // Fall back to the existing multi-strategy extractor below.
     }
   }
 
-  // Defensive URL normalization. Instagram sometimes embeds CDN URLs in
-  // HTML/JSON with escaped ampersands; changing those to literal '&' is
-  // required because the CDN signature covers the exact query string.
+  const response = await handleDownloadRequest(request, { IG_DOC_IDS: process.env.IG_DOC_IDS }, rateLimit);
+
+  // Defensive URL normalization for responses returned by the legacy extractor.
   if (response.ok && response.headers.get("content-type")?.includes("application/json")) {
     try {
       const body = (await response.json()) as any;
