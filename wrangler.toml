@@ -1,0 +1,15 @@
+# Cloudflare Worker config for the QuickVideoSaver API (free plan, no card required)
+name = "quickvideosaver-api"
+main = "workers/instagram-worker.ts"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Optional: route the worker under your own domain once DNS is on Cloudflare
+# routes = [{ pattern = "api.quickvideosaver.me", custom_domain = true }]
+
+[vars]
+# Comma separated GraphQL doc_ids to try, in order. Update here if Instagram rotates them.
+IG_DOC_IDS = "27128499623469141,8845758582119845,10015901848480474"
+RATE_LIMIT_PER_MINUTE = "30"
+# Lock CORS to your frontend origin in production, e.g. "https://quickvideosaver.me"
+# ALLOWED_ORIGIN = "https://quickvideosaver.me"
