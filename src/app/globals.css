@@ -9,6 +9,8 @@
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   color-scheme: light;
 }
@@ -21,6 +23,54 @@ html {
 body {
   @apply bg-white text-slate-800 antialiased;
 }
+
+html.dark body {
+  background-color: #0f172a;
+  color: #e2e8f0;
+}
+
+html.dark header {
+  background-color: rgba(15, 23, 42, 0.92);
+  border-color: #1e293b;
+}
+
+html.dark .card {
+  border-color: #334155;
+  background-color: #111827;
+}
+
+/* Keep the existing Tailwind utility classes readable in dark mode. */
+html.dark .bg-white { background-color: #111827; }
+html.dark .bg-slate-50 { background-color: #1e293b; }
+html.dark .bg-slate-100 { background-color: #334155; }
+html.dark .bg-slate-200 { background-color: #475569; }
+html.dark .text-slate-900 { color: #f8fafc; }
+html.dark .text-slate-800 { color: #e2e8f0; }
+html.dark .text-slate-700 { color: #cbd5e1; }
+html.dark .text-slate-600 { color: #94a3b8; }
+html.dark .text-slate-500 { color: #94a3b8; }
+html.dark .text-slate-400 { color: #64748b; }
+html.dark .border-slate-100 { border-color: #1e293b; }
+html.dark .border-slate-200 { border-color: #334155; }
+html.dark .border-slate-300 { border-color: #475569; }
+html.dark .placeholder\:text-slate-400::placeholder { color: #64748b; }
+html.dark .hover\:bg-slate-50:hover { background-color: #1e293b; }
+html.dark .hover\:bg-slate-100:hover { background-color: #334155; }
+html.dark .hover\:bg-slate-200:hover { background-color: #475569; }
+html.dark .hover\:text-slate-800:hover { color: #f8fafc; }
+html.dark .hover\:text-slate-900:hover { color: #fff; }
+
+html.dark .border-amber-200 { border-color: #92400e; }
+html.dark .bg-amber-50 { background-color: #451a03; }
+html.dark .text-amber-800 { color: #fcd34d; }
+html.dark .text-amber-900 { color: #fde68a; }
+html.dark .border-sky-200 { border-color: #075985; }
+html.dark .bg-sky-50 { background-color: #082f49; }
+html.dark .text-sky-900 { color: #bae6fd; }
+html.dark .border-red-200 { border-color: #991b1b; }
+html.dark .bg-red-50 { background-color: #450a0a; }
+html.dark .text-red-900 { color: #fecaca; }
+html.dark .text-red-600 { color: #fca5a5; }
 
 .ig-gradient {
   background-image: linear-gradient(90deg, #f58529 0%, #dd2a7b 45%, #8134af 80%, #515bd4 100%);
@@ -44,6 +94,16 @@ body {
 
 .btn-secondary {
   @apply inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 disabled:opacity-60;
+}
+
+html.dark .btn-secondary {
+  background-color: #1e293b;
+  color: #e2e8f0;
+  border-color: #475569;
+}
+html.dark .btn-secondary:hover {
+  background-color: #334155;
+  border-color: #64748b;
 }
 
 .card {
