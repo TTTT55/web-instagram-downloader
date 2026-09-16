@@ -20,6 +20,11 @@ function proxyUrl(url: string, filename: string, inline = false) {
   return `${API_BASE}/api/proxy?${p.toString()}`;
 }
 
+function downloadFileUrl(url: string, filename: string) {
+  const p = new URLSearchParams({ url, filename });
+  return `${API_BASE}/api/download-file?${p.toString()}`;
+}
+
 function fileBase(result: MediaResult, item: MediaItem) {
   const user = result.owner?.username ? `${result.owner.username}_` : "";
   const suffix = result.items.length > 1 ? `_${item.index + 1}` : "";
@@ -322,10 +327,37 @@ function MediaCard({ item, result, mode, refreshItem }: { item: MediaItem; resul
 
     try {
       const fresh = await refreshItem(item.index);
-      // Instagram's signed CDN URL works directly from the browser. Avoid
-      // proxying the download through Cloudflare, which can invalidate the
-      // CDN request/signature even though the exact URL is browser-accessible.
-      window.location.assign(fresh.url);
+      const filename = `${base}.${fresh.type === "video" ? "mp4" : "jpg"}`;
+
+      // First try the browser-to-Instagram CDN path. Some Instagram CDN
+      // responses allow CORS, which lets us turn the fresh response into a
+      // same-origin blob URL and use the browser's real download mechanism.
+      try {
+        const upstream = await fetch(fresh.url, {
+          mode: "cors",
+          credentials: "omit",
+          cache: "no-store",
+        });
+        if (!upstream.ok) throw new Error(`Instagram CDN responded with ${upstream.status}.`);
+
+        const blob = await upstream.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const anchor = document.createElement("a");
+        anchor.href = blobUrl;
+        anchor.download = filename;
+        anchor.style.display = "none";
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        window.setTimeout(() => URL.revokeObjectURL(blobUrl), 30_000);
+        setDownloadState("idle");
+        return;
+      } catch {
+        // Fall back to a same-origin streaming endpoint. It sets
+        // Content-Disposition: attachment without navigating to Instagram.
+      }
+
+      window.location.assign(downloadFileUrl(fresh.url, filename));
     } catch (err) {
       setDownloadState("error");
       setDownloadError((err as Error).message);
@@ -389,7 +421,7 @@ function MediaCard({ item, result, mode, refreshItem }: { item: MediaItem; resul
                 <>
                   <svg className="spinner h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden>
                     <circle cx="12" cy="12" r="9" stroke="currentColor" strokeOpacity="0.3" strokeWidth="3" />
-                    <path d="M21 12a9 9 0 0 1-9-9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                    <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
                   </svg>
                   {audioState === "downloading" ? "Downloading…" : audioState === "decoding" ? "Extracting audio…" : "Encoding…"}
                 </>
