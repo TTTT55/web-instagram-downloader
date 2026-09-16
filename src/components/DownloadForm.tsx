@@ -178,7 +178,7 @@ export function DownloadForm({ mode, placeholder }: Props) {
             <>
               <svg className="spinner h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden>
                 <circle cx="12" cy="12" r="9" stroke="currentColor" strokeOpacity="0.3" strokeWidth="3" />
-                <path d="M21 12a9 9 0 0-9-9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
               </svg>
               Fetching…
             </>
@@ -322,7 +322,10 @@ function MediaCard({ item, result, mode, refreshItem }: { item: MediaItem; resul
 
     try {
       const fresh = await refreshItem(item.index);
-      window.location.assign(proxyUrl(fresh.url, `${base}.${fresh.type === "video" ? "mp4" : "jpg"}`));
+      // Instagram's signed CDN URL works directly from the browser. Avoid
+      // proxying the download through Cloudflare, which can invalidate the
+      // CDN request/signature even though the exact URL is browser-accessible.
+      window.location.assign(fresh.url);
     } catch (err) {
       setDownloadState("error");
       setDownloadError((err as Error).message);
@@ -386,7 +389,7 @@ function MediaCard({ item, result, mode, refreshItem }: { item: MediaItem; resul
                 <>
                   <svg className="spinner h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden>
                     <circle cx="12" cy="12" r="9" stroke="currentColor" strokeOpacity="0.3" strokeWidth="3" />
-                    <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                    <path d="M21 12a9 9 0 0 1-9-9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
                   </svg>
                   {audioState === "downloading" ? "Downloading…" : audioState === "decoding" ? "Extracting audio…" : "Encoding…"}
                 </>
