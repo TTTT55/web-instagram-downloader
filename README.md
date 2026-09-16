@@ -99,10 +99,10 @@ The application does not require PostgreSQL, a VPS, or another paid backend. Clo
 
 ## Domain setup
 
-1. Claim the free `.me` domain through the GitHub Student Developer Pack/Namecheap offer if your checkout qualifies.
+1. Get a domain for the project from a registrar or domain provider.
 2. Add the domain to Cloudflare and copy Cloudflare's assigned nameservers.
-3. In Namecheap → Domain → Nameservers → **Custom DNS**, use Cloudflare's nameservers.
-4. In Cloudflare Workers, add `quickvideosaver.me` as the Worker's custom domain.
+3. At your registrar, open the domain's nameserver settings and use Cloudflare's nameservers.
+4. In Cloudflare Workers, add the domain as the Worker's custom domain.
 
 You do **not** need GitHub Pages for this full-stack deployment.
 

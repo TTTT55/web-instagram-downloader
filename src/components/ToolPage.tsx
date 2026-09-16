@@ -23,7 +23,7 @@ export function ToolPage({ tool }: { tool: ToolConfig }) {
       <section className="relative overflow-hidden">
         <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-gradient-to-b from-brand-50 to-white" aria-hidden />
         <div className="mx-auto max-w-3xl px-4 pb-10 pt-10 text-center sm:pt-14">
-          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">{tool.h1}</h1>
+          <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-5xl">{tool.h1}</h1>
           <p className="mx-auto mt-4 max-w-2xl text-base text-slate-600 sm:text-lg">{tool.subtitle}</p>
           <div className="mt-8">
             <DownloadForm mode={tool.mode} placeholder={tool.placeholder} />
