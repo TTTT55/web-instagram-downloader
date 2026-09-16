@@ -20,15 +20,15 @@ export function ToolPage({ tool }: { tool: ToolConfig }) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(appLd) }} />
 
       {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-gradient-to-b from-brand-50 to-white" aria-hidden />
+      <section className="relative overflow-hidden bg-white dark:bg-[#0f172a] dark:border-b dark:border-slate-800">
+        <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-gradient-to-b from-brand-50 to-white dark:from-[#251a2c] dark:via-[#111827] dark:to-[#0f172a]" aria-hidden />
         <div className="mx-auto max-w-3xl px-4 pb-10 pt-10 text-center sm:pt-14">
-          <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-5xl">{tool.h1}</h1>
-          <p className="mx-auto mt-4 max-w-2xl text-base text-slate-600 sm:text-lg">{tool.subtitle}</p>
+          <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-slate-50 sm:text-5xl">{tool.h1}</h1>
+          <p className="mx-auto mt-4 max-w-2xl text-base text-slate-600 dark:text-slate-400 sm:text-lg">{tool.subtitle}</p>
           <div className="mt-8">
             <DownloadForm mode={tool.mode} placeholder={tool.placeholder} />
           </div>
-          <ul className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs font-medium text-slate-500">
+          <ul className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs font-medium text-slate-500 dark:text-slate-400">
             <li className="flex items-center gap-1.5">
               <Check /> No login
             </li>
