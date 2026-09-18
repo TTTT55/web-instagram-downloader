@@ -1,5 +1,5 @@
 export const SITE_NAME = "QuickVideoSaver";
-export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://quickvideosaver.me").replace(/\/$/, "");
+export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://quickvideosaver.tech").replace(/\/$/, "");
 export const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "support@quickvideosaver.me";
 /** Base URL of the API. Empty string = same origin (Next.js route handlers). Set to your Worker URL for static hosting. */
 export const API_BASE = (process.env.NEXT_PUBLIC_API_BASE || "").replace(/\/$/, "");
