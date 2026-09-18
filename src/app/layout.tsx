@@ -52,9 +52,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         {ADSENSE_CLIENT ? (
           <Script
             async
+            id="adsense-script"
             src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
             crossOrigin="anonymous"
-            strategy="afterInteractive"
+            strategy="beforeInteractive"
           />
         ) : null}
         <Header />
