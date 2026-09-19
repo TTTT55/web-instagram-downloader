@@ -13,3 +13,5 @@ binding = "ASSETS"
 # Comma-separated Instagram GraphQL doc_ids to try, in order.
 IG_DOC_IDS = "27128499623469141,8845758582119845,10015901848480474"
 RATE_LIMIT_PER_MINUTE = "30"
+# Public AdSense publisher client identifier used by the site verification/ad script.
+NEXT_PUBLIC_ADSENSE_CLIENT = "ca-pub-9773847388363945"
