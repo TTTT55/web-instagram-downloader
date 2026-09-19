@@ -3,7 +3,8 @@ export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://quickvideo
 export const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "support@quickvideosaver.me";
 /** Base URL of the API. Empty string = same origin (Next.js route handlers). Set to your Worker URL for static hosting. */
 export const API_BASE = (process.env.NEXT_PUBLIC_API_BASE || "").replace(/\/$/, "");
-export const ADSENSE_CLIENT = process.env.NEXT_PUBLIC_ADSENSE_CLIENT || "";
+// AdSense publisher ID is public. Keep a fallback here because NEXT_PUBLIC_* values are inlined by Next.js at build time, while Wrangler [vars] are runtime bindings.
+export const ADSENSE_CLIENT = process.env.NEXT_PUBLIC_ADSENSE_CLIENT || "ca-pub-9773847388363945";
 
 export type ToolMode = "video" | "photo" | "audio" | "reels" | "stories";
 
