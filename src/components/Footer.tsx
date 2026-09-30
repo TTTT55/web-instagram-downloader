@@ -27,6 +27,14 @@ export function Footer() {
             </ul>
           </div>
           <div>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">Resources</h3>
+            <ul className="mt-3 space-y-2 text-sm">
+              <li><Link href="/about" className="text-slate-700 hover:text-brand-600">About</Link></li>
+              <li><Link href="/guides" className="text-slate-700 hover:text-brand-600">Download Guides</Link></li>
+              <li><Link href="/faq" className="text-slate-700 hover:text-brand-600">FAQ</Link></li>
+            </ul>
+          </div>
+          <div>
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">Legal</h3>
             <ul className="mt-3 space-y-2 text-sm">
               <li>
