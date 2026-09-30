@@ -12,8 +12,8 @@ const isValidAdSlot = (slot?: string) => Boolean(slot && /^\d+$/.test(slot));
 
 /**
  * Ad placeholder. Once a numeric AdSense ad-unit ID is supplied, renders the
- * responsive AdSense unit. Until then, it keeps a labelled placeholder so the
- * site remains valid while the AdSense site review is pending.
+ * responsive AdSense unit. Unconfigured slots are omitted so review pages do not
+ * show empty advertisement placeholders.
  */
 export function AdSlot({ slot, variant = "banner", className = "" }: AdSlotProps) {
   const sizeClass = variant === "banner" ? "min-h-[90px] md:min-h-[90px]" : "min-h-[250px]";
