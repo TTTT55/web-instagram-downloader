@@ -19,7 +19,6 @@ export function ToolPage({ tool }: { tool: ToolConfig }) {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(appLd) }} />
 
-      {/* Hero */}
       <section className="relative overflow-hidden bg-white dark:bg-[#0f172a] dark:border-b dark:border-slate-800">
         <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-gradient-to-b from-brand-50 to-white dark:from-[#251a2c] dark:via-[#111827] dark:to-[#0f172a]" aria-hidden />
         <div className="mx-auto max-w-3xl px-4 pb-10 pt-10 text-center sm:pt-14">
@@ -29,31 +28,21 @@ export function ToolPage({ tool }: { tool: ToolConfig }) {
             <DownloadForm mode={tool.mode} placeholder={tool.placeholder} />
           </div>
           <ul className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs font-medium text-slate-500 dark:text-slate-400">
-            <li className="flex items-center gap-1.5">
-              <Check /> No login
-            </li>
-            <li className="flex items-center gap-1.5">
-              <Check /> No watermark
-            </li>
-            <li className="flex items-center gap-1.5">
-              <Check /> Free &amp; unlimited
-            </li>
-            <li className="flex items-center gap-1.5">
-              <Check /> Nothing stored
-            </li>
+            <li className="flex items-center gap-1.5"><Check /> No login</li>
+            <li className="flex items-center gap-1.5"><Check /> No watermark</li>
+            <li className="flex items-center gap-1.5"><Check /> Free &amp; unlimited</li>
+            <li className="flex items-center gap-1.5"><Check /> Nothing stored</li>
           </ul>
         </div>
       </section>
 
-      <AdSlot slot="in-content-1" variant="rectangle" className="py-2" />
-
       <Steps />
       <Features tool={tool} />
       <GuideContent tool={tool} />
-
-      <AdSlot slot="in-content-2" variant="banner" className="pt-10" />
-
       <Faq />
+
+      {/* Keep advertising below the substantial publisher content. */}
+      <AdSlot slot="in-content-2" variant="banner" className="pb-10 pt-2" />
     </>
   );
 }
