@@ -1,6 +1,6 @@
 import { AdSlot } from "./AdSlot";
 import { DownloadForm } from "./DownloadForm";
-import { Faq, Features, Steps } from "./Sections";
+import { Faq, Features, GuideContent, Steps } from "./Sections";
 import { SITE_NAME, SITE_URL, type ToolConfig } from "@/lib/site";
 
 export function ToolPage({ tool }: { tool: ToolConfig }) {
@@ -49,6 +49,7 @@ export function ToolPage({ tool }: { tool: ToolConfig }) {
 
       <Steps />
       <Features tool={tool} />
+      <GuideContent tool={tool} />
 
       <AdSlot slot="in-content-2" variant="banner" className="pt-10" />
 
