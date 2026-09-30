@@ -1,4 +1,3 @@
-import { AdSlot } from "./AdSlot";
 import { DownloadForm } from "./DownloadForm";
 import { Faq, Features, GuideContent, Steps } from "./Sections";
 import { SITE_NAME, SITE_URL, type ToolConfig } from "@/lib/site";
@@ -40,9 +39,6 @@ export function ToolPage({ tool }: { tool: ToolConfig }) {
       <Features tool={tool} />
       <GuideContent tool={tool} />
       <Faq />
-
-      {/* Keep advertising below the substantial publisher content. */}
-      <AdSlot slot="in-content-2" variant="banner" className="pb-10 pt-2" />
     </>
   );
 }
