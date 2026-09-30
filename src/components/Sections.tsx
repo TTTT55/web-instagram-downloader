@@ -62,6 +62,68 @@ export function Features({ tool }: { tool: ToolConfig }) {
   );
 }
 
+export function GuideContent({ tool }: { tool: ToolConfig }) {
+  const guides: Record<ToolConfig["mode"], { title: string; paragraphs: string[]; tips: string[] }> = {
+    video: {
+      title: "Understanding Instagram video downloads",
+      paragraphs: [
+        "A public Instagram video is still controlled by its creator and may be subject to copyright or other reuse restrictions. QuickVideoSaver is designed for situations where you have permission to save the media or are using it for a permitted personal purpose.",
+        "The downloader resolves the public information available for the post and presents the media Instagram makes accessible. Resolution, encoding and availability come from the source; the service does not create a higher-quality copy.",
+      ],
+      tips: ["Use the original post URL rather than a copied CDN URL.", "If a link stops working, submit the original post again to obtain a fresh media URL.", "A private or deleted post cannot be made public by the downloader."],
+    },
+    photo: {
+      title: "Understanding Instagram photo downloads",
+      paragraphs: [
+        "Instagram posts can contain a single image or several images in a carousel. When public media information is available, QuickVideoSaver lists the individual images so you can choose the one you need.",
+        "The downloaded image is limited by the source Instagram makes available. Saving a file does not transfer copyright ownership or permission to republish it.",
+      ],
+      tips: ["Use the public post URL, not a manually copied image CDN URL.", "For carousels, check each returned item because a post can contain multiple images.", "Ask the creator for permission before commercial or public reuse."],
+    },
+    audio: {
+      title: "Understanding audio extraction",
+      paragraphs: [
+        "For supported public videos and Reels, QuickVideoSaver can expose the video's audio for saving. Audio may be subject to separate copyright or licensing restrictions from the video itself.",
+        "The available sound depends on the source media. If Instagram does not expose an accessible video or audio track, the service cannot reconstruct one from an unavailable post.",
+      ],
+      tips: ["Start with the public Reel or video URL.", "If extraction fails, first check whether the original post still plays publicly.", "Treat downloaded music and other audio as copyrighted unless you have permission to reuse it."],
+    },
+    reels: {
+      title: "Understanding Instagram Reel downloads",
+      paragraphs: [
+        "Reels are short-form Instagram videos that can be shared publicly through a Reel URL. QuickVideoSaver attempts to resolve the public media attached to that URL without asking for an Instagram login.",
+        "Instagram can change how public Reel data is exposed or can expire signed media links. A failed download therefore does not necessarily mean the Reel itself has disappeared.",
+      ],
+      tips: ["Open the Reel in Instagram first to confirm it is publicly accessible.", "Submit the Reel URL again if an earlier download link has expired.", "Downloaded media remains subject to the creator's copyright and reuse permissions."],
+    },
+    stories: {
+      title: "Understanding Instagram story links",
+      paragraphs: [
+        "Instagram Stories can have stricter access requirements than ordinary public posts. QuickVideoSaver does not request your Instagram credentials and does not attempt to bypass private access.",
+        "If a story requires a login or is no longer available, there may be no public media URL that the service can resolve. Stories that are also available as public posts or Reels can sometimes be handled through their public post URL instead.",
+      ],
+      tips: ["Use a publicly accessible URL.", "Never give your Instagram password to a downloader.", "If the story is unavailable to a logged-out browser, the service cannot guarantee access."],
+    },
+  };
+
+  const guide = guides[tool.mode];
+
+  return (
+    <section className="mx-auto max-w-4xl px-4 py-14">
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900 sm:p-8">
+        <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-slate-50 sm:text-3xl">{guide.title}</h2>
+        <div className="mt-5 space-y-4 text-sm leading-7 text-slate-600 dark:text-slate-400">
+          {guide.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+        </div>
+        <h3 className="mt-7 font-bold text-slate-900 dark:text-slate-100">Useful checks before downloading</h3>
+        <ul className="mt-3 space-y-2 text-sm leading-6 text-slate-600 dark:text-slate-400">
+          {guide.tips.map((tip) => <li key={tip} className="ml-5 list-disc">{tip}</li>)}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
 export function Faq() {
   const jsonLd = {
     "@context": "https://schema.org",
