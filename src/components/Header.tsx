@@ -1,6 +1,5 @@
 import { Logo } from "./Logo";
 import { NavTabs } from "./NavTabs";
-import { AdSlot } from "./AdSlot";
 import { ThemeToggle } from "./ThemeToggle";
 
 export function Header() {
@@ -19,7 +18,6 @@ export function Header() {
         </div>
       </div>
       <NavTabs />
-      <AdSlot slot="header-banner" variant="banner" className="py-3" />
     </header>
   );
 }
